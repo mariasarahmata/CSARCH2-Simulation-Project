@@ -74,3 +74,7 @@ function clearFields() {
     document.getElementById("binaryOutput").textContent = '';
     document.getElementById("hexOutput").textContent = '';
 }
+
+// Add event listeners to buttons
+document.getElementById("convert-button").addEventListener("click", convert);
+document.getElementById("clear-button").addEventListener("click", clearFields);
