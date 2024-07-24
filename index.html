@@ -1,63 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-
-  <title>IEEE-754 Binary-32 floating-point converter</title>
-  <link rel = "stylesheet" href = "index.css">
+    <meta charset="UTF-8">
+    <title>IEEE-754 Binary-32 Floating-Point Converter</title>
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
-  <h1>IEEE-754 Binary-32 floating-point converter (including all special cases)</h1>
-  <button> <a href="calc.html">simple calculator</a> </button>
-  <br><br>
+    <h1>IEEE-754 Binary-32 Floating-Point Converter (including all special cases)</h1>
+    <p>Enter your number in the format: <strong>mantissa x base ^ exponent</strong> (e.g., 101.01x2^5 or 15.75x10^5)</p>
 
-  <input id = "input" placeholder = "input" autofocus>
-  <button id = "convert-button" onclick = "convert()">Convert</button>
+    <input id="input" placeholder="e.g., 101.01x2^5" autofocus>
+    <button id="convert-button">Convert</button>
+    
+    <div id="results">
+        <p><strong>Whole Number:</strong> <span id="beforeRadixPoint"></span></p>
+        <p><strong>Fractional Part:</strong> <span id="afterRadixPoint"></span></p>
+        <p><strong>Base:</strong> <span id="base"></span></p>
+        <p><strong>Exponent:</strong> <span id="exponent"></span></p>
+        <p><strong>Sign:</strong> <span id="sign"></span></p>
+        <p><strong>E':</strong> <span id="eprime"></span></p>
+        <p><strong>Mantissa:</strong> <span id="mantissa"></span></p>
+        <p><strong>Binary Output:</strong> <span id="binaryOutput"></span></p>
+        <p><strong>Hexadecimal:</strong> <span id="hex"></span></p>
+    </div>
 
-  <br>
-  <br>whole num: <label id="beforeRadixPoint"></label>
-  <br>fraction: <label id="afterRadixPoint"></label>
-  <br>base: <label id="base"></label>
-  <br>exponent: <label id="exponent"></label>
-  <br>
-  <br>sign: <label id="sign"></label>
-  <br>e': <label id="eprime"></label>
-  <br>mantissa: <label id="mantissa"></label>
-  <br>
-  <br>Hex equivalent: <label id="hex"></label>
-  <br><br><br>
-  <button id = "download-button" onclick = "downlad()">Download TXT file</button>
+    <button id="download-button">Download Output</button>
 
-  <br><br>
-  <br><br>
-  IEEE-754 Binary-32 floating-point converter (including all special cases) <br>
-  <br>Input: 
-  <ul>
-    <li>  mantissa and base-2 (i.e., 101.01x2⁵),</li>  
-    <li>  decimal mantissa and base-10 (i.e.,15.75x10⁵) and NaN</li>
-  </ul>
-  
-  <br>Output: 
-  <ol>
-    <li>  binary output with space between sections </li>
-    <li>  it's hexadecimal equivalent </li>
-    <li>  with an option to output in a text file </li>
-  </ol>
+    <p>Password (just a demo element, unrelated):</p>
+    <input type="range" min="0" max="999999" value="50" id="myRange">
+    <span id="rangeValue"></span>
+    
+    <script src="index.js"></script>
+    <script>
+        const rangeInput = document.getElementById("myRange");
+        const valueDisplay = document.getElementById("rangeValue");
 
-
-  <br><br>
-  what is your password?<br>
-  password: <br>
-  <input type="range" min="0" max="999999" value="50" id="myRange">
-  <span id="rangeValue"></span>
-  <script>
-    const rangeInput = document.getElementById("myRange");
-    const valueDisplay = document.getElementById("rangeValue");
-
-    rangeInput.oninput = function() {
-      valueDisplay.textContent = rangeInput.value;
-    }
-  </script>
-  
-  <script src = "index.js"></script>
+        rangeInput.oninput = function() {
+            valueDisplay.textContent = rangeInput.value;
+        }
+    </script>
 </body>
 </html>
