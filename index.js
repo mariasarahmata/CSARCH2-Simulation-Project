@@ -1,29 +1,25 @@
 function convert() {
-    const input = document.getElementById('input');
-    const output = document.getElementById('output');
-    const text = input.value.trim();
-
-    if (!text) {
-        output.textContent = "Please enter a value.";
+    let number = document.getElementById("number").value.trim();
+    let base = document.getElementById("base").value;
+    let exponent = parseInt(document.getElementById("exponent").value.trim() || "0", 10);
+    
+    if (!number || isNaN(exponent)) {
+        alert("Please fill in all fields correctly.");
         return;
     }
 
-    const pattern = /^([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)x(\d+)\^([-+]?\d+)$/;
-    const match = text.match(pattern);
+    // Parse the number according to the selected base
+    let parsedNumber = parseNumber(number, base);
+    
+    let ieee754Binary = decimalToIEEE754(parsedNumber, exponent);
+    let hexOutput = binaryToHex(ieee754Binary);
 
-    if (!match) {
-        output.textContent = "Input is formatted incorrectly. Use the format: <mantissa>x<base>^<exponent>";
-        return;
-    }
+    document.getElementById("binaryOutput").textContent = ieee754Binary;
+    document.getElementById("hexOutput").textContent = hexOutput;
+}
 
-    const [_, mantissa, base, exponent] = match;
-    const decimalMantissa = parseFloat(mantissa);
-    const numExponent = parseInt(exponent, 10);
-
-    const ieee754Binary = decimalToIEEE754(decimalMantissa, numExponent);
-    const hexOutput = binaryToHex(ieee754Binary);
-
-    output.innerHTML = `<strong>Binary:</strong> ${ieee754Binary} <br><strong>Hexadecimal:</strong> ${hexOutput}`;
+function parseNumber(number, base) {
+    return base === '10' ? parseFloat(number) : parseInt(number, 2);
 }
 
 function decimalToIEEE754(decimal, exponentInput) {
@@ -31,20 +27,13 @@ function decimalToIEEE754(decimal, exponentInput) {
     decimal = Math.abs(decimal);
 
     let bias = 127;
-    let leadingOneIndex = 0;
     let binary = decimalToBinary(decimal);
-    let [integerPart, fractionalPart = ""] = binary.split('.');
-
-    if (integerPart !== "0") {
-        leadingOneIndex = integerPart.length - 1;
-        fractionalPart = integerPart.substr(1) + fractionalPart;
-    } else {
-        leadingOneIndex = -fractionalPart.indexOf('1') - 1;
-        fractionalPart = fractionalPart.substr(-leadingOneIndex);
-    }
+    let integerPart = binary.split('.')[0];
+    let fractionalPart = binary.split('.')[1] || '';
+    let leadingOneIndex = integerPart.length - 1;
 
     let exponent = leadingOneIndex + bias + exponentInput;
-    let mantissa = fractionalPart.padEnd(23, '0').slice(0, 23);
+    let mantissa = (integerPart.substr(1) + fractionalPart).padEnd(23, '0').slice(0, 23);
 
     let binaryExponent = exponent.toString(2).padStart(8, '0');
     return `${sign}${binaryExponent}${mantissa}`;
@@ -77,4 +66,11 @@ function decimalToBinary(decimal) {
         }
     }
     return binary;
+}
+
+function clearFields() {
+    document.getElementById("number").value = '';
+    document.getElementById("exponent").value = '';
+    document.getElementById("binaryOutput").textContent = '';
+    document.getElementById("hexOutput").textContent = '';
 }
