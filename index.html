@@ -3,41 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title>IEEE-754 Binary-32 Floating-Point Converter</title>
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>IEEE-754 Binary-32 Floating-Point Converter (including all special cases)</h1>
-    <p>Enter your number in the format: <strong>mantissa x base ^ exponent</strong> (e.g., 101.01x2^5 or 15.75x10^5)</p>
-
-    <input id="input" placeholder="e.g., 101.01x2^5" autofocus>
-    <button id="convert-button">Convert</button>
-    
-    <div id="results">
-        <p><strong>Whole Number:</strong> <span id="beforeRadixPoint"></span></p>
-        <p><strong>Fractional Part:</strong> <span id="afterRadixPoint"></span></p>
-        <p><strong>Base:</strong> <span id="base"></span></p>
-        <p><strong>Exponent:</strong> <span id="exponent"></span></p>
-        <p><strong>Sign:</strong> <span id="sign"></span></p>
-        <p><strong>E':</strong> <span id="eprime"></span></p>
-        <p><strong>Mantissa:</strong> <span id="mantissa"></span></p>
-        <p><strong>Binary Output:</strong> <span id="binaryOutput"></span></p>
-        <p><strong>Hexadecimal:</strong> <span id="hex"></span></p>
+    <div class="converter-container">
+        <h1>IEEE-754 Binary-32 Floating-Point Converter</h1>
+        <div>
+            <input id="number" placeholder="Enter number" autofocus>
+            <select id="base">
+                <option value="2">x2 (Binary)</option>
+                <option value="10">x10 (Decimal)</option>
+            </select>
+            <input id="exponent" placeholder="Enter exponent" type="number">
+            <button onclick="convert()">Convert</button>
+            <button onclick="clearFields()">Clear</button>
+        </div>
+        <div id="output">
+            <p><strong>Binary Output:</strong> <span id="binaryOutput"></span></p>
+            <p><strong>Hexadecimal:</strong> <span id="hexOutput"></span></p>
+        </div>
     </div>
-
-    <button id="download-button">Download Output</button>
-
-    <p>Password (just a demo element, unrelated):</p>
-    <input type="range" min="0" max="999999" value="50" id="myRange">
-    <span id="rangeValue"></span>
-    
-    <script src="index.js"></script>
-    <script>
-        const rangeInput = document.getElementById("myRange");
-        const valueDisplay = document.getElementById("rangeValue");
-
-        rangeInput.oninput = function() {
-            valueDisplay.textContent = rangeInput.value;
-        }
-    </script>
+    <script src="converter.js"></script>
 </body>
 </html>
