@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>IEEE-754 Binary-32 floating-point converter</title>
+  <link rel = "stylesheet" href = "index.css">
+</head>
+<body>
+  <h1>IEEE-754 Binary-32 floating-point converter (including all special cases)</h1>
+  <button> <a href="calc.html">simple calculator</a> </button>
+  <br><br>
+
+  <input id = "input" placeholder = "input" autofocus>
+  <button id = "convert-button" onclick = "convert()">Convert</button>
+
+  <br>
+  <br>whole num: <label id="beforeRadixPoint"></label>
+  <br>fraction: <label id="afterRadixPoint"></label>
+  <br>base: <label id="base"></label>
+  <br>exponent: <label id="exponent"></label>
+  <br>
+  <br>sign: <label id="sign"></label>
+  <br>e': <label id="eprime"></label>
+  <br>mantissa: <label id="mantissa"></label>
+  <br>
+  <br>Hex equivalent: <label id="hex"></label>
+  <br><br><br>
+  <button id = "download-button" onclick = "downlad()">Download TXT file</button>
+
+  <br><br>
+  <br><br>
+  IEEE-754 Binary-32 floating-point converter (including all special cases) <br>
+  <br>Input: 
+  <ul>
+    <li>  mantissa and base-2 (i.e., 101.01x2⁵),</li>  
+    <li>  decimal mantissa and base-10 (i.e.,15.75x10⁵) and NaN</li>
+  </ul>
+  
+  <br>Output: 
+  <ol>
+    <li>  binary output with space between sections </li>
+    <li>  it's hexadecimal equivalent </li>
+    <li>  with an option to output in a text file </li>
+  </ol>
+
+
+  <br><br>
+  what is your password?<br>
+  password: <br>
+  <input type="range" min="0" max="999999" value="50" id="myRange">
+  <span id="rangeValue"></span>
+  <script>
+    const rangeInput = document.getElementById("myRange");
+    const valueDisplay = document.getElementById("rangeValue");
+
+    rangeInput.oninput = function() {
+      valueDisplay.textContent = rangeInput.value;
+    }
+  </script>
+  
+  <script src = "index.js"></script>
+</body>
+</html>

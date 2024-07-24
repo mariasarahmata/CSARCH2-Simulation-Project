@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>IEEE-754 Binary-32 floating-point converter (including all special cases)</title>
+  <link rel = "stylesheet" href = "calc.css">
+</head>
+<body>
+  to add: manual typing/inputting<br>
+  where 1*2 becomes 1×2<br>
+  and where 1^2 becomes 1²<br><br>
+
+  todo: center this fucking calculator div<br>
+  <div id = "calculator">
+    <input id = "display">
+    <button id = "del" onclick = "backspace()">✖</button>
+    
+    <div id="popup" style="display: none;">
+      <input id = "output" value = "Output: " readonly>
+    </div>
+
+    <div id = "keys">
+      <button onclick = "appendToDisplay('7')">7</button>
+      <button onclick = "appendToDisplay('8')">8</button>
+      <button onclick = "appendToDisplay('9')">9</button>
+      <button onclick = "appendToDisplay('÷')" class = "operator-button">÷</button>
+      <button onclick = "appendToDisplay('4')">4</button>
+      <button onclick = "appendToDisplay('5')">5</button>
+      <button onclick = "appendToDisplay('6')">6</button>
+      <button onclick = "appendToDisplay('×')" class = "operator-button">×</button>
+      <button onclick = "appendToDisplay('1')">1</button>
+      <button onclick = "appendToDisplay('2')">2</button>
+      <button onclick = "appendToDisplay('3')">3</button>
+      <button onclick = "appendToDisplay('−')" class = "operator-button">−</button>
+      <button onclick = "appendToDisplay('0')">0</button>
+      <button onclick = "appendToDisplay('.')">.</button>
+      <button id = "clear" onclick = "clearDisplay()">C</button>      
+      <button onclick = "appendToDisplay('+')" class = "operator-button">+</button>
+      <button onclick = "appendToDisplay('^')" class = "operator-button">𝑥<sup>□</sup></button>
+      <button onclick = "appendToDisplay('(')" class = "operator-button">(</button>
+      <button onclick = "appendToDisplay(')')" class = "operator-button">)</button>
+      <button onclick = "calculate()" class = "operator-button" id="openInput">=</button>
+    </div>
+  </div>
+  <script src = "calc.js"></script>
+</body>
+</html>
