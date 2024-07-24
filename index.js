@@ -1,18 +1,29 @@
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('convert-button').addEventListener('click', convert);
+    document.getElementById('clear-button').addEventListener('click', clearFields);
+});
+
 function convert() {
+    console.log("Convert function triggered");
     let number = document.getElementById("number").value.trim();
     let base = document.getElementById("base").value;
     let exponent = parseInt(document.getElementById("exponent").value.trim() || "0", 10);
     
+    console.log("Number:", number, "Base:", base, "Exponent:", exponent);
+
     if (!number || isNaN(exponent)) {
+        console.error("Input validation failed.");
         alert("Please fill in all fields correctly.");
         return;
     }
 
-    // Parse the number according to the selected base
     let parsedNumber = parseNumber(number, base);
-    
+    console.log("Parsed Number:", parsedNumber);
+
     let ieee754Binary = decimalToIEEE754(parsedNumber, exponent);
     let hexOutput = binaryToHex(ieee754Binary);
+
+    console.log("IEEE754 Binary:", ieee754Binary, "Hex:", hexOutput);
 
     document.getElementById("binaryOutput").textContent = ieee754Binary;
     document.getElementById("hexOutput").textContent = hexOutput;
@@ -74,7 +85,3 @@ function clearFields() {
     document.getElementById("binaryOutput").textContent = '';
     document.getElementById("hexOutput").textContent = '';
 }
-
-// Add event listeners to buttons
-document.getElementById("convert-button").addEventListener("click", convert);
-document.getElementById("clear-button").addEventListener("click", clearFields);
