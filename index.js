@@ -1,3 +1,8 @@
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('convert-button').addEventListener('click', convert);
+    document.getElementById('clear-button').addEventListener('click', clearFields);
+});
+
 function convert() {
     let number = document.getElementById("number").value.trim();
     let base = document.getElementById("base").value;
