@@ -1,9 +1,11 @@
+// Wait until the HTML document is fully loaded before binding event listeners
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('convert-button').addEventListener('click', convert);
     document.getElementById('clear-button').addEventListener('click', clearFields);
-    document.getElementById('download-button').addEventListener('click', downloadOutput);  // Ensure this is included
+    document.getElementById('download-button').addEventListener('click', downloadOutput); 
 });
 
+// Handles the conversion based on the input values
 function convert() {
     let number = document.getElementById("number").value.trim();
     let base = document.getElementById("base").value;
@@ -19,6 +21,7 @@ function convert() {
     document.getElementById('hexOutput').textContent = result.hex;
 }
 
+// Convert a binary string to IEEE-754 format
 function convertBase2(binaryString, exponent) {
     let sign = binaryString[0] === '-' ? '1' : '0';
     if (sign === '1') binaryString = binaryString.substring(1); // Remove sign for processing
@@ -28,6 +31,7 @@ function convertBase2(binaryString, exponent) {
     return {binary, hex};
 }
 
+// Convert a decimal string to IEEE-754 format
 function convertBase10(decimalString, exponent) {
     let decimalValue = parseFloat(decimalString);
     let sign = decimalValue < 0 ? '1' : '0';
@@ -40,15 +44,18 @@ function convertBase10(decimalString, exponent) {
     return {binary, hex};
 }
 
+// Converts a decimal number to a binary string
 function toBinary(decimal) {
     let integerPart = Math.floor(decimal);
     let fractionalPart = decimal - integerPart;
     let binary = integerPart.toString(2);
 
+    // Handling the fractional part for single precision (23 bits needed for mantissa)
     if (fractionalPart !== 0) {
         binary += '.';
         let counter = 0;
-        while (fractionalPart !== 0 && counter < 52) {  // IEEE 754 uses 52 bits for double precision
+        // Only loop until you've resolved up to 23 bits of precision or the fractional part resolves to zero
+        while (fractionalPart !== 0 && counter < 23) {
             fractionalPart *= 2;
             let bit = Math.floor(fractionalPart);
             binary += bit;
@@ -59,6 +66,8 @@ function toBinary(decimal) {
     return binary;
 }
 
+
+// Normalize a binary string for IEEE-754 conversion
 function normalizeBinary(binaryString) {
     let parts = binaryString.split('.');
     let integerPart = parts[0];
@@ -91,17 +100,19 @@ function normalizeBinary(binaryString) {
     };
 }
 
-
+// Format a binary and exponent into IEEE-754 binary representation
 function formatIEEE754(sign, exponent, mantissa) {
     let exponentBinary = exponent.toString(2).padStart(8, '0');
     return sign + exponentBinary + mantissa;
 }
 
+// Convert a binary string to hexadecimal
 function binaryToHex(binary) {
     let hex = parseInt(binary, 2).toString(16).toUpperCase();
     return hex.padStart(8, '0');
 }
 
+// Clear input fields and output display
 function clearFields() {
     document.getElementById("number").value = '';
     document.getElementById("exponent").value = '';
@@ -109,6 +120,7 @@ function clearFields() {
     document.getElementById("hexOutput").textContent = '';
 }
 
+// Download binary and hexadecimal output as a text file
 function downloadOutput() {
     let binaryOutput = document.getElementById('binaryOutput').textContent;
     let hexOutput = document.getElementById('hexOutput').textContent;
