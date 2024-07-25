@@ -44,22 +44,35 @@ function convertDecimalToBase2(decimalString, exponent) {
 function normalizeBinary(binaryString) {
     let parts = binaryString.split('.');
     let integerPart = parts[0];
-    let fractionalPart = parts[1] || '';
+    let fractionalPart = parts.length > 1 ? parts[1] : '';
+    let shift, normalizedMantissa;
 
-    if (integerPart === '0' && fractionalPart) {
+    // Handle numbers less than 1 where integer part is '0'
+    if (integerPart === '0' || integerPart === '') {
+        // Find the first '1' in the fractional part to determine the shift
         let firstOneIndex = fractionalPart.indexOf('1');
-        return {
-            mantissa: fractionalPart.substring(firstOneIndex + 1).padEnd(23, '0').slice(0, 23),
-            exponent: -firstOneIndex - 1
-        };
+        if (firstOneIndex === -1) {
+            // The number is actually zero
+            return { mantissa: '0'.repeat(23), exponent: -127 }; // Exponent for zero in IEEE-754
+        }
+        // Adjust the fractional part to start after the first '1'
+        normalizedMantissa = fractionalPart.substring(firstOneIndex + 1);
+        shift = -firstOneIndex - 1; // Negative because we are shifting to the right
     } else {
-        let shift = integerPart.length - 1;
-        return {
-            mantissa: (integerPart.substring(1) + fractionalPart).padEnd(23, '0').slice(0, 23),
-            exponent: shift
-        };
+        // For numbers with a non-zero integer part, normalize based on the location of the first '1'
+        shift = integerPart.length - 1;
+        normalizedMantissa = (integerPart.substring(1) + fractionalPart); // Skip the leading '1'
     }
+
+    // Ensure the mantissa is exactly 23 bits long
+    normalizedMantissa = (normalizedMantissa + '0'.repeat(23)).substring(0, 23);
+
+    return {
+        mantissa: normalizedMantissa,
+        exponent: shift
+    };
 }
+
 
 function binaryToHex(binary) {
     let hex = '';
