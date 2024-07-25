@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('convert-button').addEventListener('click', convert);
     document.getElementById('clear-button').addEventListener('click', clearFields);
-    document.getElementById('download-button').addEventListener('click', downloadOutput);  // Ensure this is correct
+    document.getElementById('download-button').addEventListener('click', downloadOutput);  // Ensure this is included
 });
 
 function convert() {
@@ -113,6 +113,7 @@ function downloadOutput() {
     let binaryOutput = document.getElementById('binaryOutput').textContent;
     let hexOutput = document.getElementById('hexOutput').textContent;
     let content = `Binary Output: ${binaryOutput}\nHexadecimal: ${hexOutput}`;
+    console.log(content); // This will help you verify the output content.
 
     let blob = new Blob([content], { type: 'text/plain' });
     let url = window.URL.createObjectURL(blob);
