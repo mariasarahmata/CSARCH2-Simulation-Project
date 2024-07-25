@@ -1,8 +1,3 @@
-document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('convert-button').addEventListener('click', convert);
-    document.getElementById('clear-button').addEventListener('click', clearFields);
-});
-
 function convert() {
     let number = document.getElementById("number").value.trim();
     let base = document.getElementById("base").value;
@@ -18,37 +13,39 @@ function convert() {
     document.getElementById('hexOutput').textContent = result.hex;
 }
 
-function convertBase2(binary, initialExponent) {
-    let sign = binary.startsWith('-') ? '1' : '0';
-    binary = binary.replace(/^-/, ''); // Remove negative sign for processing
-
-    let { normalizedBinary, shift } = normalizeBinary(binary);
-    let exponent = 127 + initialExponent - shift; // Adjust exponent based on shift and bias
-
-    let mantissa = normalizedBinary.substring(2, 25); // Take 23 bits for mantissa after the leading '1.'
-    let binaryResult = `${sign}${exponent.toString(2).padStart(8, '0')}${mantissa.padEnd(23, '0')}`;
-    let hex = binaryToHex(binaryResult);
-
-    return { binary: binaryResult, hex };
+function convertBase2(mantissa, exponent) {
+    let {normalizedMantissa, adjustedExponent} = normalizeMantissa(mantissa, exponent);
+    let binary = formatIEEE754Binary(normalizedMantissa, adjustedExponent);
+    let hex = binaryToHex(binary);
+    return {binary, hex};
 }
 
-function convertBase10(decimal, exponent) {
-    let binary = parseFloat(decimal).toString(2);
-    return convertBase2(binary, exponent);
+function convertBase10(mantissa, exponent) {
+    let decimalValue = parseFloat(mantissa) * Math.pow(10, exponent);
+    let {normalizedMantissa, adjustedExponent} = normalizeMantissa(decimalValue.toString(), 0);
+    let binary = formatIEEE754Binary(normalizedMantissa, adjustedExponent);
+    let hex = binaryToHex(binary);
+    return {binary, hex};
 }
 
-function normalizeBinary(binary) {
-    let firstOneIndex = binary.indexOf('1');
-    if (firstOneIndex === -1) {
-        return { normalizedBinary: '1.' + '0'.repeat(23), shift: 0 }; // Edge case for 0
-    }
-    let normalizedBinary = '1.' + binary.slice(firstOneIndex + 1).replace('.', '');
-    return { normalizedBinary, shift: firstOneIndex };
+function normalizeMantissa(mantissa, exponent) {
+    let sign = mantissa[0] === '-' ? 1 : 0;
+    mantissa = Math.abs(parseFloat(mantissa));
+    let binary = mantissa.toString(2);
+    let index = binary.indexOf('.') - 1;
+    let adjustedExponent = 127 + index + exponent;
+    let normalizedMantissa = binary.replace('.', '').substring(1);
+    return {normalizedMantissa: sign + normalizedMantissa.padEnd(23, '0'), adjustedExponent};
+}
+
+function formatIEEE754Binary(mantissa, exponent) {
+    let exponentBinary = exponent.toString(2).padStart(8, '0');
+    return mantissa + exponentBinary;
 }
 
 function binaryToHex(binary) {
     let hex = '';
-    for (let i = 0; i < 32; i += 4) {
+    for (let i = 0; i < binary.length; i += 4) {
         const chunk = binary.substring(i, i + 4);
         const decimal = parseInt(chunk, 2);
         hex += decimal.toString(16).toUpperCase();
