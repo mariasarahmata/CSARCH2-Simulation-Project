@@ -29,14 +29,34 @@ function convertBase10(mantissa, exponent) {
 }
 
 function normalizeMantissa(mantissa, exponent) {
-    let sign = mantissa[0] === '-' ? 1 : 0;
-    mantissa = Math.abs(parseFloat(mantissa));
-    let binary = mantissa.toString(2);
-    let index = binary.indexOf('.') - 1;
-    let adjustedExponent = 127 + index + exponent;
-    let normalizedMantissa = binary.replace('.', '').substring(1);
-    return {normalizedMantissa: sign + normalizedMantissa.padEnd(23, '0'), adjustedExponent};
+    let sign = mantissa[0] === '-' ? '1' : '0'; // Ensure sign is correctly captured as '0' or '1'
+    mantissa = Math.abs(parseFloat(mantissa)).toString(2); // Convert mantissa to binary
+
+    // Remove the '0.' part for easier manipulation if it's in subnormal form
+    if (mantissa.startsWith('0.')) {
+        mantissa = mantissa.substring(2);
+    } else if (mantissa.includes('.')) {
+        mantissa = mantissa.replace('.', '');
+    }
+
+    let firstOneIndex = mantissa.indexOf('1');
+    if (firstOneIndex === -1) {
+        // If no '1' is found, the number is 0
+        return { normalizedMantissa: '0'.repeat(23), adjustedExponent: -127 }; // Return a zero representation for IEEE-754
+    }
+
+    // Calculate the new exponent based on the position of the first '1'
+    let shift = firstOneIndex;
+    exponent = exponent - shift; // Adjust the exponent based on the shift
+    exponent += 127; // Apply the IEEE-754 bias for the exponent
+
+    // Normalize the mantissa to remove the leading '1' and ensure it's 23 bits long
+    mantissa = mantissa.substring(firstOneIndex + 1); // Skip the first '1' which is implied in IEEE format
+    let normalizedMantissa = (mantissa + '0'.repeat(23)).substring(0, 23); // Pad and cut to ensure exactly 23 bits
+
+    return { normalizedMantissa: sign + normalizedMantissa, adjustedExponent: exponent };
 }
+
 
 function formatIEEE754Binary(mantissa, exponent) {
     let exponentBinary = exponent.toString(2).padStart(8, '0');
