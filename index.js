@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('convert-button').addEventListener('click', convert);
     document.getElementById('clear-button').addEventListener('click', clearFields);
 });
@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function convert() {
     let number = document.getElementById('number').value.trim();
     let base = document.getElementById('base').value;
-    let exponent = parseInt(document.getElementById('exponent').value.trim(), 10);
+    let exponent = parseInt(document.getElementById('exponent').value.trim() || "0", 10);
 
     if (!number || isNaN(exponent)) {
         alert("Please fill in all fields correctly.");
@@ -30,12 +30,22 @@ function decimalToIEEE754(decimal, exponentInput) {
     decimal = Math.abs(decimal);
 
     let binary = decimalToBinary(decimal);
-    let integerPart = binary.split('.')[0];
-    let fractionalPart = binary.split('.')[1] || '';
-    let leadingOneIndex = integerPart.length - 1;
+    let mantissa;
+    let exponent;
 
-    let exponent = leadingOneIndex + 127 + exponentInput; // Adjusted for IEEE-754 Bias for single-precision
-    let mantissa = (integerPart.substr(1) + fractionalPart).padEnd(23, '0').slice(0, 23);
+    if (decimal >= 1) {
+        // Normalize for numbers greater than or equal to 1
+        let integerPart = binary.split('.')[0];
+        let fractionalPart = binary.split('.')[1] || '';
+        let shift = integerPart.length - 1;
+        exponent = 127 + shift + exponentInput; // Adjust exponent based on shift and bias
+        mantissa = (integerPart.substr(1) + fractionalPart).padEnd(23, '0').substring(0, 23);
+    } else {
+        // Normalize for numbers less than 1
+        let shift = binary.substring(1).indexOf('1') + 1;
+        exponent = 127 - shift + exponentInput; // Adjust exponent for numbers less than 1
+        mantissa = binary.substring(shift + 2).padEnd(23, '0').substring(0, 23);
+    }
 
     let binaryExponent = exponent.toString(2).padStart(8, '0');
     return `${sign}${binaryExponent}${mantissa}`;
