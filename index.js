@@ -14,7 +14,7 @@ function convert() {
     }
 
     let result = base === '2' ? convertBase2(number, exponent) : convertBase10(number, exponent);
-    document.getElementById('binaryOutput').textContent = formatForDisplay(result.binary); // Use formatted binary for display
+    document.getElementById('binaryOutput').textContent = result.binary;
     document.getElementById('hexOutput').textContent = result.hex;
 }
 
@@ -37,10 +37,6 @@ function convertBase10(decimalString, exponent) {
     let binary = formatIEEE754(sign, normalized.exponent + exponent + 127, normalized.mantissa);
     let hex = binaryToHex(binary);
     return {binary, hex};
-}
-
-function formatForDisplay(binary) {
-    return binary.substring(0, 1) + " " + binary.substring(1, 9) + " " + binary.substring(9);
 }
 
 function toBinary(decimal) {
@@ -66,27 +62,42 @@ function normalizeBinary(binaryString) {
     let parts = binaryString.split('.');
     let integerPart = parts[0];
     let fractionalPart = parts.length > 1 ? parts[1] : '';
-    let shift = integerPart.length - 1;
+    let shift, normalizedMantissa;
 
-    let mantissa = (integerPart + fractionalPart).substr(1); // Remove the leading '1' for IEEE-754 mantissa
+    // Handle numbers less than 1 where integer part is '0'
+    if (integerPart === '0' || integerPart === '') {
+        // Find the first '1' in the fractional part to determine the shift
+        let firstOneIndex = fractionalPart.indexOf('1');
+        if (firstOneIndex === -1) {
+            // The number is actually zero
+            return { mantissa: '0'.repeat(23), exponent: -127 }; // Exponent for zero in IEEE-754
+        }
+        // Adjust the fractional part to start after the first '1'
+        normalizedMantissa = fractionalPart.substring(firstOneIndex + 1);
+        shift = -firstOneIndex - 1; // Negative because we are shifting to the right
+    } else {
+        // For numbers with a non-zero integer part, normalize based on the location of the first '1'
+        shift = integerPart.length - 1;
+        normalizedMantissa = (integerPart.substring(1) + fractionalPart); // Skip the leading '1'
+    }
+
+    // Ensure the mantissa is exactly 23 bits long
+    normalizedMantissa = (normalizedMantissa + '0'.repeat(23)).substring(0, 23);
+
     return {
-        mantissa: mantissa.padEnd(23, '0').substring(0, 23),  // Pad/truncate to 23 bits
+        mantissa: normalizedMantissa,
         exponent: shift
     };
 }
 
+
 function formatIEEE754(sign, exponent, mantissa) {
     let exponentBinary = exponent.toString(2).padStart(8, '0');
-    return `${sign} ${exponentBinary} ${mantissa}`; // Insert spaces for readability
+    return sign + exponentBinary + mantissa;
 }
 
 function binaryToHex(binary) {
-    let hex = '';
-    for (let i = 0; i < binary.length; i += 4) {
-        const chunk = binary.substring(i, i + 4);
-        const decimal = parseInt(chunk, 2);
-        hex += decimal.toString(16).toUpperCase();
-    }
+    let hex = parseInt(binary, 2).toString(16).toUpperCase();
     return hex.padStart(8, '0');
 }
 
@@ -95,20 +106,4 @@ function clearFields() {
     document.getElementById("exponent").value = '';
     document.getElementById("binaryOutput").textContent = '';
     document.getElementById("hexOutput").textContent = '';
-}
-
-function downloadOutput() {
-    let binaryOutput = document.getElementById('binaryOutput').textContent;
-    let hexOutput = document.getElementById('hexOutput').textContent;
-    let content = `Binary Output: ${binaryOutput}\nHexadecimal: ${hexOutput}`;
-
-    let blob = new Blob([content], { type: 'text/plain' });
-    let url = window.URL.createObjectURL(blob);
-    let a = document.createElement('a');
-    a.href = url;
-    a.download = 'FloatingPointConversionOutput.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
 }
