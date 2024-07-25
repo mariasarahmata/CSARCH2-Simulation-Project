@@ -19,41 +19,38 @@ function convert() {
 }
 
 function convertBase2(mantissa, exponent) {
-    let {normalizedMantissa, adjustedExponent} = normalizeMantissa(mantissa, exponent);
-    let binary = formatIEEE754Binary(normalizedMantissa, adjustedExponent);
+    let normalizedResult = normalizeMantissa(mantissa, exponent);
+    let binary = formatIEEE754Binary(normalizedResult.mantissa, normalizedResult.exponent);
     let hex = binaryToHex(binary);
     return {binary, hex};
 }
 
 function convertBase10(mantissa, exponent) {
     let decimalValue = parseFloat(mantissa) * Math.pow(10, exponent);
-    let {normalizedMantissa, adjustedExponent} = normalizeMantissa(decimalValue.toString(), 0);
-    let binary = formatIEEE754Binary(normalizedMantissa, adjustedExponent);
+    let normalizedResult = normalizeMantissa(decimalValue.toString(2), 0);
+    let binary = formatIEEE754Binary(normalizedResult.mantissa, normalizedResult.exponent);
     let hex = binaryToHex(binary);
     return {binary, hex};
 }
 
 function normalizeMantissa(mantissa, exponent) {
-    let sign = mantissa[0] === '-' ? '1' : '0';
+    let sign = mantissa.startsWith('-') ? '1' : '0';
     mantissa = Math.abs(parseFloat(mantissa)).toString(2);
 
-    if (mantissa.startsWith('0.')) {
-        mantissa = mantissa.substring(2);
-    } else if (mantissa.includes('.')) {
-        mantissa = mantissa.replace('.', '');
-    }
+    // Normalize the binary string
+    if (!mantissa.includes('.')) mantissa += '.0';
+    let [integerPart, fractionalPart] = mantissa.split('.');
+    let shift = integerPart === '0' ? fractionalPart.indexOf('1') + 1 : 0;
+    exponent += (integerPart === '0' ? -shift : integerPart.length - 1);
 
-    let firstOneIndex = mantissa.indexOf('1');
-    if (firstOneIndex === -1) {
-        return { normalizedMantissa: '0'.repeat(23), adjustedExponent: -127 };
-    }
+    // Adjust exponent for IEEE-754 format
+    exponent += 127;
+    let normalizedMantissa = (integerPart === '0' ? fractionalPart.slice(shift) : fractionalPart).padEnd(23, '0').substring(0, 23);
 
-    let shift = firstOneIndex;
-    exponent = exponent - shift + 127;
-    mantissa = mantissa.substring(firstOneIndex + 1);
-    let normalizedMantissa = (mantissa + '0'.repeat(23)).substring(0, 23);
-
-    return { normalizedMantissa: sign + normalizedMantissa, adjustedExponent: exponent };
+    return {
+        mantissa: sign + normalizedMantissa,
+        exponent: exponent
+    };
 }
 
 function formatIEEE754Binary(mantissa, exponent) {
