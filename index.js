@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('convert-button').addEventListener('click', convert);
     document.getElementById('clear-button').addEventListener('click', clearFields);
 });
@@ -18,41 +18,37 @@ function convert() {
     document.getElementById('hexOutput').textContent = result.hex;
 }
 
-function convertBase2(binary, exponent) {
-    let sign = binary.startsWith('-') ? 1 : 0;
+function convertBase2(binary, initialExponent) {
+    let sign = binary.startsWith('-') ? '1' : '0';
     binary = binary.replace(/^-/, ''); // Remove negative sign for processing
-    let normalized = normalizeBinary(binary);
-    let adjustedExponent = 127 + exponent + normalized.shift; // Adjust exponent with bias and shift
 
-    let mantissa = normalized.binary.substr(1, 23); // Skip the leading '1' and take the next 23 bits
-    let binaryResult = `${sign}${adjustedExponent.toString(2).padStart(8, '0')}${mantissa.padEnd(23, '0')}`;
+    let { normalizedBinary, shift } = normalizeBinary(binary);
+    let exponent = 127 + initialExponent - shift; // Adjust exponent based on shift and bias
+
+    let mantissa = normalizedBinary.substring(2, 25); // Take 23 bits for mantissa after the leading '1.'
+    let binaryResult = `${sign}${exponent.toString(2).padStart(8, '0')}${mantissa.padEnd(23, '0')}`;
     let hex = binaryToHex(binaryResult);
 
-    return {binary: binaryResult, hex};
+    return { binary: binaryResult, hex };
 }
 
 function convertBase10(decimal, exponent) {
-    // Convert to binary first
     let binary = parseFloat(decimal).toString(2);
     return convertBase2(binary, exponent);
 }
 
 function normalizeBinary(binary) {
-    let shift = 0;
-    if (binary.startsWith('1.')) {
-        // Already normalized
-        return {binary, shift};
-    } else {
-        let firstOneIndex = binary.indexOf('1');
-        shift = firstOneIndex - 1;
-        let normalizedBinary = '1.' + binary.substring(firstOneIndex + 1).replace('.', '');
-        return {binary: normalizedBinary, shift};
+    let firstOneIndex = binary.indexOf('1');
+    if (firstOneIndex === -1) {
+        return { normalizedBinary: '1.' + '0'.repeat(23), shift: 0 }; // Edge case for 0
     }
+    let normalizedBinary = '1.' + binary.slice(firstOneIndex + 1).replace('.', '');
+    return { normalizedBinary, shift: firstOneIndex };
 }
 
 function binaryToHex(binary) {
     let hex = '';
-    for (let i = 0; i < binary.length; i += 4) {
+    for (let i = 0; i < 32; i += 4) {
         const chunk = binary.substring(i, i + 4);
         const decimal = parseInt(chunk, 2);
         hex += decimal.toString(16).toUpperCase();
