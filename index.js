@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('convert-button').addEventListener('click', convert);
     document.getElementById('clear-button').addEventListener('click', clearFields);
+    document.getElementById('download-button').addEventListener('click', downloadOutput);  // Ensure this is correct
 });
 
 function convert() {
