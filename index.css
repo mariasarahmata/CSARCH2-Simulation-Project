@@ -53,10 +53,22 @@ button:hover {
 #output p {
     font-size: 16px;
     color: #444;
+    margin-top: 10px;
 }
 
 #binaryOutput, #hexOutput {
     font-weight: bold;
+    word-wrap: break-word; /* Ensure long outputs wrap properly */
+}
+
+/* Styling for download button */
+#download-button {
+    background-color: #4CAF50; /* Green */
+    margin-top: 20px;
+}
+
+#download-button:hover {
+    background-color: #45a049; /* Darker green */
 }
 
 /* Responsive adjustments */
