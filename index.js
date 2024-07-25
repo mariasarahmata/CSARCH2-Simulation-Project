@@ -107,3 +107,19 @@ function clearFields() {
     document.getElementById("binaryOutput").textContent = '';
     document.getElementById("hexOutput").textContent = '';
 }
+
+function downloadOutput() {
+    let binaryOutput = document.getElementById('binaryOutput').textContent;
+    let hexOutput = document.getElementById('hexOutput').textContent;
+    let content = `Binary Output: ${binaryOutput}\nHexadecimal: ${hexOutput}`;
+
+    let blob = new Blob([content], { type: 'text/plain' });
+    let url = window.URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = 'FloatingPointConversionOutput.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
