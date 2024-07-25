@@ -4,58 +4,61 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function convert() {
-    let number = document.getElementById("number").value.trim();
-    let base = document.getElementById("base").value;
-    let exponent = parseInt(document.getElementById("exponent").value.trim() || "0", 10);
+    const number = document.getElementById("number").value.trim();
+    const base = document.getElementById("base").value;
+    const exponentInput = parseInt(document.getElementById("exponent").value.trim() || "0", 10);
 
-    if (!number || isNaN(exponent)) {
+    if (!number || isNaN(exponentInput)) {
         alert("Please ensure all fields are filled in correctly.");
         return;
     }
 
-    let result = base === '2' ? convertBase2(number, exponent) : convertBase10(number, exponent);
+    let result = (base === '2') ? convertBase2(number, exponentInput) : convertDecimalToBase2(number, exponentInput);
     document.getElementById('binaryOutput').textContent = result.binary;
     document.getElementById('hexOutput').textContent = result.hex;
 }
 
-function convertBase2(mantissa, exponent) {
-    let normalizedResult = normalizeMantissa(mantissa, exponent);
-    let binary = formatIEEE754Binary(normalizedResult.mantissa, normalizedResult.exponent);
+function convertBase2(binaryString, exponent) {
+    let sign = binaryString.startsWith('-') ? '1' : '0';
+    let mantissa = binaryString.replace(/^-/, '');
+    let normalized = normalizeBinary(mantissa);
+    let ePrime = normalized.exponent + 127 + exponent;
+    let binary = `${sign}${ePrime.toString(2).padStart(8, '0')}${normalized.mantissa}`;
     let hex = binaryToHex(binary);
-    return {binary, hex};
+    return { binary, hex };
 }
 
-function convertBase10(mantissa, exponent) {
-    let decimalValue = parseFloat(mantissa) * Math.pow(10, exponent);
-    let normalizedResult = normalizeMantissa(decimalValue.toString(2), 0);
-    let binary = formatIEEE754Binary(normalizedResult.mantissa, normalizedResult.exponent);
+function convertDecimalToBase2(decimalString, exponent) {
+    let number = parseFloat(decimalString);
+    let sign = number < 0 ? '1' : '0';
+    number = Math.abs(number);
+
+    let binaryString = number.toString(2);
+    let normalized = normalizeBinary(binaryString);
+    let ePrime = normalized.exponent + 127 + exponent;
+    let binary = `${sign}${ePrime.toString(2).padStart(8, '0')}${normalized.mantissa}`;
     let hex = binaryToHex(binary);
-    return {binary, hex};
+    return { binary, hex };
 }
 
-function normalizeMantissa(mantissa, exponent) {
-    let sign = mantissa.startsWith('-') ? '1' : '0';
-    mantissa = Math.abs(parseFloat(mantissa)).toString(2);
+function normalizeBinary(binaryString) {
+    let parts = binaryString.split('.');
+    let integerPart = parts[0];
+    let fractionalPart = parts[1] || '';
 
-    // Normalize the binary string
-    if (!mantissa.includes('.')) mantissa += '.0';
-    let [integerPart, fractionalPart] = mantissa.split('.');
-    let shift = integerPart === '0' ? fractionalPart.indexOf('1') + 1 : 0;
-    exponent += (integerPart === '0' ? -shift : integerPart.length - 1);
-
-    // Adjust exponent for IEEE-754 format
-    exponent += 127;
-    let normalizedMantissa = (integerPart === '0' ? fractionalPart.slice(shift) : fractionalPart).padEnd(23, '0').substring(0, 23);
-
-    return {
-        mantissa: sign + normalizedMantissa,
-        exponent: exponent
-    };
-}
-
-function formatIEEE754Binary(mantissa, exponent) {
-    let exponentBinary = exponent.toString(2).padStart(8, '0');
-    return mantissa + exponentBinary;
+    if (integerPart === '0' && fractionalPart) {
+        let firstOneIndex = fractionalPart.indexOf('1');
+        return {
+            mantissa: fractionalPart.substring(firstOneIndex + 1).padEnd(23, '0').slice(0, 23),
+            exponent: -firstOneIndex - 1
+        };
+    } else {
+        let shift = integerPart.length - 1;
+        return {
+            mantissa: (integerPart.substring(1) + fractionalPart).padEnd(23, '0').slice(0, 23),
+            exponent: shift
+        };
+    }
 }
 
 function binaryToHex(binary) {
