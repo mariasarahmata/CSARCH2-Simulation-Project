@@ -1,14 +1,26 @@
 document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('convert-button').addEventListener('click', convert);
-    document.getElementById('clear-button').addEventListener('click', clearFields);
+    console.log("DOM fully loaded and parsed");
+    document.getElementById('convert-button').addEventListener('click', function() {
+        console.log("Convert button clicked");
+        convert();
+    });
+    document.getElementById('clear-button').addEventListener('click', function() {
+        console.log("Clear button clicked");
+        clearFields();
+    });
 });
 
+
 function convert() {
+    console.log("Attempting to convert...");
     let number = document.getElementById("number").value.trim();
+    console.log("Number:", number);
     let base = document.getElementById("base").value;
     let exponent = parseInt(document.getElementById("exponent").value.trim() || "0", 10);
+    console.log("Base:", base, "Exponent:", exponent);
 
     if (!number || isNaN(exponent)) {
+        console.error("Invalid input.");
         alert("Please ensure all fields are filled in correctly.");
         return;
     }
@@ -79,6 +91,7 @@ function binaryToHex(binary) {
 }
 
 function clearFields() {
+    console.log("Clearing fields...");
     document.getElementById("number").value = '';
     document.getElementById("exponent").value = '';
     document.getElementById("binaryOutput").textContent = '';
