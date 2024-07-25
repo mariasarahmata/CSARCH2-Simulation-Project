@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('convert-button').addEventListener('click', convert);
     document.getElementById('clear-button').addEventListener('click', clearFields);
-    document.getElementById('download-button').addEventListener('click', downloadOutput);
 });
 
 function convert() {
@@ -15,7 +14,7 @@ function convert() {
     }
 
     let result = base === '2' ? convertBase2(number, exponent) : convertBase10(number, exponent);
-    document.getElementById('binaryOutput').textContent = result.binary;
+    document.getElementById('binaryOutput').textContent = formatForDisplay(result.binary); // Use formatted binary for display
     document.getElementById('hexOutput').textContent = result.hex;
 }
 
@@ -38,6 +37,10 @@ function convertBase10(decimalString, exponent) {
     let binary = formatIEEE754(sign, normalized.exponent + exponent + 127, normalized.mantissa);
     let hex = binaryToHex(binary);
     return {binary, hex};
+}
+
+function formatForDisplay(binary) {
+    return binary.substring(0, 1) + " " + binary.substring(1, 9) + " " + binary.substring(9);
 }
 
 function toBinary(decimal) {
