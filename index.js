@@ -4,85 +4,58 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function convert() {
-    let number = document.getElementById('number').value.trim();
-    let base = document.getElementById('base').value;
-    let exponent = parseInt(document.getElementById('exponent').value.trim() || "0", 10);
+    let number = document.getElementById("number").value.trim();
+    let base = document.getElementById("base").value;
+    let exponent = parseInt(document.getElementById("exponent").value.trim() || "0", 10);
 
     if (!number || isNaN(exponent)) {
-        alert("Please fill in all fields correctly.");
+        alert("Please ensure all fields are filled in correctly.");
         return;
     }
 
-    let parsedNumber = parseNumber(number, base);
-    let ieee754Binary = decimalToIEEE754(parsedNumber, exponent);
-    let hexOutput = binaryToHex(ieee754Binary);
-
-    document.getElementById('binaryOutput').textContent = ieee754Binary;
-    document.getElementById('hexOutput').textContent = hexOutput;
+    let result = base === '2' ? convertBase2(number, exponent) : convertBase10(number, exponent);
+    document.getElementById('binaryOutput').textContent = result.binary;
+    document.getElementById('hexOutput').textContent = result.hex;
 }
 
-function parseNumber(number, base) {
-    return base === '10' ? parseFloat(number) : parseInt(number, 2);
+function convertBase2(mantissa, exponent) {
+    let {normalizedMantissa, adjustedExponent} = normalizeMantissa(mantissa, exponent);
+    let binary = decimalToBinary(normalizedMantissa, adjustedExponent);
+    let hex = binaryToHex(binary);
+    return {binary, hex};
 }
 
-function decimalToIEEE754(decimal, exponentInput) {
-    const sign = decimal < 0 ? 1 : 0;
-    decimal = Math.abs(decimal);
+function convertBase10(mantissa, exponent) {
+    let decimalValue = parseFloat(mantissa) * Math.pow(10, exponent);
+    let {normalizedMantissa, adjustedExponent} = normalizeMantissa(decimalValue.toString(), 0);
+    let binary = decimalToBinary(normalizedMantissa, adjustedExponent);
+    let hex = binaryToHex(binary);
+    return {binary, hex};
+}
 
-    let binary = decimalToBinary(decimal);
-    let mantissa;
-    let exponent;
+function normalizeMantissa(mantissa, exponent) {
+    let sign = mantissa[0] === '-' ? 1 : 0;
+    mantissa = Math.abs(parseFloat(mantissa));
+    let binary = mantissa.toString(2);
+    let index = binary.indexOf('.') - 1;
+    let adjustedExponent = 127 + index + exponent; // Adjust for the exponent field
+    let normalizedMantissa = binary.replace('.', '').substring(1); // Remove the decimal point and the leading 1
+    return {normalizedMantissa: sign + normalizedMantissa.padEnd(23, '0'), adjustedExponent};
+}
 
-    if (decimal >= 1) {
-        // Normalize for numbers greater than or equal to 1
-        let integerPart = binary.split('.')[0];
-        let fractionalPart = binary.split('.')[1] || '';
-        let shift = integerPart.length - 1;
-        exponent = 127 + shift + exponentInput; // Adjust exponent based on shift and bias
-        mantissa = (integerPart.substr(1) + fractionalPart).padEnd(23, '0').substring(0, 23);
-    } else {
-        // Normalize for numbers less than 1
-        let shift = binary.substring(1).indexOf('1') + 1;
-        exponent = 127 - shift + exponentInput; // Adjust exponent for numbers less than 1
-        mantissa = binary.substring(shift + 2).padEnd(23, '0').substring(0, 23);
-    }
-
-    let binaryExponent = exponent.toString(2).padStart(8, '0');
-    return `${sign}${binaryExponent}${mantissa}`;
+function decimalToBinary(mantissa, exponent) {
+    let exponentBinary = exponent.toString(2).padStart(8, '0');
+    return mantissa + exponentBinary;
 }
 
 function binaryToHex(binary) {
-    let hex = '';
-    for (let i = 0; i < binary.length; i += 4) {
-        const chunk = binary.substring(i, i + 4);
-        const decimal = parseInt(chunk, 2);
-        hex += decimal.toString(16).toUpperCase();
-    }
+    let hex = parseInt(binary, 2).toString(16).toUpperCase().padStart(8, '0');
     return hex;
 }
 
-function decimalToBinary(decimal) {
-    let integerPart = Math.floor(decimal);
-    let fractionalPart = decimal - integerPart;
-    let binary = integerPart.toString(2);
-
-    if (fractionalPart !== 0) {
-        binary += '.';
-        let counter = 0;
-        while (fractionalPart !== 0 && counter < 32) {
-            fractionalPart *= 2;
-            let bit = Math.floor(fractionalPart);
-            binary += bit;
-            fractionalPart -= bit;
-            counter++;
-        }
-    }
-    return binary;
-}
-
 function clearFields() {
-    document.getElementById('number').value = '';
-    document.getElementById('exponent').value = '';
-    document.getElementById('binaryOutput').textContent = '';
-    document.getElementById('hexOutput').textContent = '';
+    document.getElementById("number").value = '';
+    document.getElementById("exponent").value = '';
+    document.getElementById("binaryOutput").textContent = '';
+    document.getElementById("hexOutput").textContent = '';
 }
