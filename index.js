@@ -43,18 +43,9 @@ function decimalToIEEE754(decimal, exponentInput) {
     let fractionalPart = binary.split('.')[1] || '';
     let leadingOneIndex = integerPart.length - 1;
 
-    // If the integer part is '0', adjust leadingOneIndex for numbers less than 1
-    if (integerPart === "0") {
-        let firstOneIndex = fractionalPart.indexOf('1');
-        if (firstOneIndex !== -1) {
-            leadingOneIndex = -(firstOneIndex + 1); // Adjust index since it's in the fractional part
-        } else {
-            leadingOneIndex = 0; // Edge case for input being 0
-        }
-    }
-
+    // Adjust for normalized binary where the leading one is implicit
     let exponent = leadingOneIndex + bias + exponentInput;
-    let mantissa = (integerPart === "0" ? fractionalPart.substring(1) : fractionalPart).padEnd(23, '0').slice(0, 23);
+    let mantissa = (integerPart.substr(1) + fractionalPart).padEnd(23, '0').slice(0, 23);
 
     let binaryExponent = exponent.toString(2).padStart(8, '0');
     let ieee754Binary = `${sign}${binaryExponent}${mantissa}`;
@@ -63,10 +54,10 @@ function decimalToIEEE754(decimal, exponentInput) {
     return ieee754Binary;
 }
 
-
 function binaryToHex(binary) {
+    binary = binary.padStart(32, '0');  // Ensure the binary string is 32 bits for correct hex conversion
     let hex = '';
-    for (let i = 0; i < binary.length; i += 4) {
+    for (let i = 0; i < 32; i += 4) {
         const chunk = binary.substring(i, i + 4);
         const decimal = parseInt(chunk, 2);
         hex += decimal.toString(16).toUpperCase();
@@ -98,4 +89,5 @@ function clearFields() {
     document.getElementById("exponent").value = '';
     document.getElementById("binaryOutput").textContent = '';
     document.getElementById("hexOutput").textContent = '';
+    console.log("Fields cleared");
 }
