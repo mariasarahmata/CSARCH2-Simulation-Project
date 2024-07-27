@@ -1,4 +1,3 @@
-// Wait until the HTML document is fully loaded before binding event listeners
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('convert-button').addEventListener('click', convert);
     document.getElementById('clear-button').addEventListener('click', clearFields);
@@ -10,6 +9,12 @@ function convert() {
     let number = document.getElementById("number").value.trim();
     let base = document.getElementById("base").value;
     let exponent = parseInt(document.getElementById("exponent").value.trim() || "0", 10);
+
+    // Check if the number is NaN (case insensitive)
+    if (number.toLowerCase() === 'nan') {
+        handleNaN();
+        return;
+    }
 
     if (!number || isNaN(exponent)) {
         alert("Please ensure all fields are filled in correctly.");
@@ -23,6 +28,11 @@ function convert() {
 
 // Convert a binary string to IEEE-754 format
 function convertBase2(binaryString, exponent) {
+    // If input is NaN, handle it
+    if (binaryString.toLowerCase() === 'nan') {
+        return handleNaN();
+    }
+
     let sign = binaryString[0] === '-' ? '1' : '0';
     if (sign === '1') binaryString = binaryString.substring(1); // Remove sign for processing
     let normalized = normalizeBinary(binaryString);
@@ -33,6 +43,11 @@ function convertBase2(binaryString, exponent) {
 
 // Convert a decimal string to IEEE-754 format
 function convertBase10(decimalString, exponent) {
+    // If input is NaN, handle it
+    if (decimalString.toLowerCase() === 'nan') {
+        return handleNaN();
+    }
+
     let decimalValue = parseFloat(decimalString);
     let sign = decimalValue < 0 ? '1' : '0';
     decimalValue = Math.abs(decimalValue);
@@ -42,6 +57,19 @@ function convertBase10(decimalString, exponent) {
     let binary = formatIEEE754(sign, normalized.exponent + exponent + 127, normalized.mantissa);
     let hex = binaryToHex(binary);
     return {binary, hex};
+}
+
+// Handles the NaN case
+function handleNaN() {
+    // NaN is represented by: sign bit = 0, exponent = all 1s, mantissa = non-zero
+    let binary = '0 11111111 10000000000000000000000';
+    let hex = '7FC00000';
+
+    // Display the NaN result
+    document.getElementById('binaryOutput').textContent = binary;
+    document.getElementById('hexOutput').textContent = hex;
+
+    return { binary, hex };
 }
 
 // Converts a decimal number to a binary string
@@ -65,7 +93,6 @@ function toBinary(decimal) {
     }
     return binary;
 }
-
 
 // Normalize a binary string for IEEE-754 conversion
 function normalizeBinary(binaryString) {
@@ -108,7 +135,7 @@ function formatIEEE754(sign, exponent, mantissa) {
 
 // Convert a binary string to hexadecimal
 function binaryToHex(binary) {
-    let hex = parseInt(binary, 2).toString(16).toUpperCase();
+    let hex = parseInt(binary.replace(/\s+/g, ''), 2).toString(16).toUpperCase();
     return hex.padStart(8, '0');
 }
 
