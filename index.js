@@ -44,25 +44,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handleSpecialCases(numInput) {
-    if (numInput.toLowerCase() === 'snan') {
+    const inputLower = numInput.toLowerCase();
+
+    if (inputLower === 'snan') {
       const result = handleNaN(true, false);
       setOutput(result.binary, result.hex);
       return true;
     }
 
-    if (numInput.toLowerCase() === 'qnan') {
+    if (inputLower === 'qnan') {
       const result = handleNaN(false, true);
       setOutput(result.binary, result.hex);
       return true;
     }
 
-    if (numInput.toLowerCase() === 'infinity') {
+    if (inputLower === 'infinity') {
       const result = handleInfinity(false);
       setOutput(result.binary, result.hex);
       return true;
     }
 
-    if (numInput.toLowerCase() === '-infinity') {
+    if (inputLower === '-infinity') {
       const result = handleInfinity(true);
       setOutput(result.binary, result.hex);
       return true;
@@ -101,10 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
           const binaryString = normalized[0];
           const exponent = 127 + normalized[1];
           const exponentRep = intToBinary(exponent);
-          const binaryAnswer = signBit + ' ' + extractExponent(exponentRep) + ' ' + extractMantissa(binaryString.split('.')[1]);
-          const hexAnswer = binaryToHex(signBit + extractExponent(exponentRep) + extractMantissa(binaryString.split('.')[1]));
+          const binaryAnswer = `${signBit} ${extractExponent(exponentRep)} ${extractMantissa(binaryString.split('.')[1])}`;
+          const hexAnswer = binaryToHex(binaryAnswer.split(' ').join(''));
 
-          binaryOutput.innerHTML = formatBinaryParts(binaryAnswer);
+          binaryOutput.innerText = formatBinaryParts(binaryAnswer);
           hexOutput.innerText = hexAnswer;
         }
       } else if (base === '10') {
@@ -122,10 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!checkSpecialCases(signBit, Number(expInput), binary[0], '0.' + binary[1], 0)) {
           const exponent = 127 + normalized[1];
           const exponentRep = intToBinary(exponent);
-          const binaryAnswer = signBit + ' ' + extractExponent(exponentRep) + ' ' + extractMantissa(binaryMantissa);
-          const hexAnswer = binaryToHex(signBit + extractExponent(exponentRep) + extractMantissa(binaryMantissa));
+          const binaryAnswer = `${signBit} ${extractExponent(exponentRep)} ${extractMantissa(binaryMantissa)}`;
+          const hexAnswer = binaryToHex(binaryAnswer.split(' ').join(''));
 
-          binaryOutput.innerHTML = formatBinaryParts(binaryAnswer);
+          binaryOutput.innerText = formatBinaryParts(binaryAnswer);
           hexOutput.innerText = hexAnswer;
         }
       }
@@ -172,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (exponent < expDenorm) {
       decimal = decimal.split('.')[1];
-      while (exponent != expDenorm) {
+      while (exponent !== expDenorm) {
         if (integer === undefined || integer === '') {
           integer = '0';
         }
@@ -182,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         integer = integer.slice(0, -1);
       }
 
-      const binaryAnswer = signBit + ' 00000000 ' + extractMantissa(decimal);
+      const binaryAnswer = `${signBit} 00000000 ${extractMantissa(decimal)}`;
       const hexAnswer = binaryToHex(binaryAnswer.split(' ').join(''));
 
       binaryOutput.innerText = binaryAnswer;
@@ -190,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       return true;
     } else if (exponent > expInfi) {
-      const binaryAnswer = signBit + ' 11111111 00000000000000000000000';
+      const binaryAnswer = `${signBit} 11111111 00000000000000000000000`;
       const hexAnswer = binaryToHex(binaryAnswer.split(' ').join(''));
 
       binaryOutput.innerText = binaryAnswer;
@@ -224,194 +226,106 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function determineSign(input) {
-    return input.includes('-') ? '1' : '0';
+    return input.startsWith('-') ? '1' : '0';
   }
 
-  function extractMantissa(mantissa) {
-    if (mantissa.length >= 23) {
-      return mantissa.slice(0, 23);
-    }
-    return mantissa.padEnd(23, '0').replace(/[^01]/g, '0');
+  function intToBinary(number) {
+    return (parseInt(number, 10) >>> 0).toString(2).padStart(32, '0');
   }
 
-  function extractExponent(input) {
-    return input.padStart(8, '0');
-  }
-
-  function intToBinary(integer) {
-    return (integer >>> 0).toString(2);
-  }
-
-  function decToBinary(input) {
-    let fractional = '';
-    let temp;
-    let count = 0;
-
-    while (input % 1 !== 0) {
-      input *= 2;
-      temp = Math.floor(input);
-      fractional += temp >= 1 ? '1' : '0';
-      if (temp >= 1) input -= 1;
-      count += 1;
-      if (count === 23) break;
-    }
-    if (fractional.length >= 23) {
-      return fractional.slice(0, 23);
-    }
-    return fractional.padEnd(23, '0').replace(/[^01]/g, '0');
+  function formatBinaryParts(binary) {
+    return binary.replace(/(.{1})(.{8})(.{8})(.{8})(.{8})/, '$1 $2 $3 $4 $5');
   }
 
   function binaryToHex(binary) {
-    let a = binary;
-    let b = '';
-
-    if (binary.includes('.')) {
-      const arr = binary.split('.');
-      a = arr[0];
-      b = arr[1];
-    }
-
-    const an = a.length % 4;
-    const bn = b.length % 4;
-
-    if (an !== 0) a = '0'.repeat(4 - an) + a;
-    if (bn !== 0) b = '0'.repeat(4 - bn) + b;
-
-    let res = binaryToHexConvert(a);
-    if (b.length > 0) res += '.' + binaryToHexConvert(b);
-
-    return res;
+    return parseInt(binary.replace(/\s+/g, ''), 2).toString(16).toUpperCase().padStart(8, '0');
   }
 
-  function binaryToHexConvert(binary) {
-    const hexIndex = [
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-    ];
-
-    return binary
-      .match(/.{1,4}/g)
-      .map(v => hexIndex[parseInt(v, 2)])
-      .join('');
+  function extractExponent(binary) {
+    return binary.slice(-8);
   }
 
-  function formatBinaryParts(binaryStr) {
-    const binaryParts = binaryStr.split(' ');
-    const signBit = binaryParts[0];
-    const exponentBit = binaryParts[1];
-    const mantissaBit = binaryParts[2];
-    return `${signBit} ${exponentBit} ${mantissaBit}`;
+  function extractMantissa(binary) {
+    return binary.padEnd(23, '0').slice(0, 23);
   }
 
-  function normalizeBinary(integer, decimal, exponent) {
-    let binary = '';
-    let count = 0;
-
-    if (integer.length === 1 && integer === '1') {
-      decimal = decimal.split('.')[1] || '0';
-      binary = integer + '.' + decimal;
-    } else if (integer.length > 1) {
-      decimal = decimal.split('.')[1] || '0';
-      while (integer !== '1') {
-        const temp = integer.slice(-1);
-        count += 1;
-        decimal = decimal.padStart(decimal.length + 1, temp);
-        integer = integer.slice(0, -1);
-      }
-      binary = '1.' + decimal;
-      exponent = count + exponent;
-    } else if (integer === '0') {
-      decimal = decimal.split('.')[1];
-      let temp = decimal;
-      while (temp.charAt(0) !== '1') {
-        temp = temp.slice(1);
-        count += 1;
-      }
-      count += 1;
-      temp = temp.slice(1);
-      binary = '1.' + temp;
-      exponent = exponent - count;
-    }
-
-    return [binary, exponent];
+  function handleNaN(signBit, quiet) {
+    const binary = `${signBit} 11111111 ${quiet ? '10000000000000000000000' : '11111111111111111111111'}`;
+    return {
+      binary: formatBinaryParts(binary),
+      hex: binaryToHex(binary),
+    };
   }
 
-  function normalizeDecimal(integer, decimal, exponent) {
-    let binary = '';
-    let count = 0;
-
-    if (decimal == 0) {
-      exponent = 0;
-    }
-
-    if (integer.toString().length === 1 && integer === '1') {
-      binary = integer + '.' + decimal;
-    } else if (integer.toString().length > 1) {
-      while (integer !== '1') {
-        const temp = integer.slice(-1);
-        count += 1;
-        decimal = decimal.padStart(decimal.toString().length + 1, temp);
-        integer = integer.slice(0, -1);
-      }
-      binary = '1.' + decimal;
-      exponent = count;
-    } else if (integer == 0) {
-      let temp = decimal;
-
-      while (temp.charAt(0) != '1') {
-        temp = temp.toString(2).slice(1);
-        count += 1;
-      }
-      count += 1;
-      temp = temp.toString(2).slice(1);
-      binary = '1.' + temp;
-      exponent = 0 - count;
-    }
-
-    return [binary, exponent];
-  }
-
-  function handleNaN(isSignaling, isQuiet) {
-    let sign = 'x'; // Default sign bit
-    let binary, hex;
-
-    if (isSignaling) {
-      binary = `${sign} 11111111 01xxxxxxxxxxxxxxxxxxxxx`;
-      hex = '7FC00000'; // Example of sNaN
-    } else if (isQuiet) {
-      binary = `${sign} 11111111 1xxxxxxxxxxxxxxxxxxxxxx`;
-      hex = '7FA00000'; // Example of qNaN
-    } else {
-      binary = `${sign} 11111111 00000000000000000000000`;
-      hex = '7FC00000'; // Example of general NaN
-    }
-
-    return { binary, hex };
-  }
-
-  function handleInfinity(isNegative) {
-    let sign = isNegative ? '1' : '0';
-    let binary = `${sign} 11111111 00000000000000000000000`;
-    let hex = isNegative ? 'FF800000' : '7F800000';
-
-    return { binary, hex };
+  function handleInfinity(signBit) {
+    const binary = `${signBit} 11111111 00000000000000000000000`;
+    return {
+      binary: formatBinaryParts(binary),
+      hex: binaryToHex(binary),
+    };
   }
 
   function handleNegativeZero() {
-    let binary = '1 00000000 00000000000000000000000';
-    let hex = '80000000';
-
-    return { binary, hex };
+    return {
+      binary: '1 00000000 00000000000000000000000',
+      hex: '80000000',
+    };
   }
 
   function handlePositiveZero() {
-    let binary = '0 00000000 00000000000000000000000';
-    let hex = '00000000';
-
-    return { binary, hex };
+    return {
+      binary: '0 00000000 00000000000000000000000',
+      hex: '00000000',
+    };
   }
 
-  function setOutput(binary, hex) {
-    document.getElementById('binaryOutput').textContent = binary;
-    document.getElementById('hexOutput').textContent = hex;
+  function normalizeBinary(integer, decimal, exponent) {
+    let normalizedBinary = integer + (decimal ? '.' + decimal : '');
+    let actualExponent = exponent;
+
+    while (normalizedBinary.length > 0 && normalizedBinary[0] === '0') {
+      normalizedBinary = normalizedBinary.slice(1);
+    }
+
+    if (normalizedBinary.length === 0) {
+      return { binary: '0', exponent: 0 };
+    }
+
+    const dotIndex = normalizedBinary.indexOf('.');
+    if (dotIndex !== -1) {
+      normalizedBinary = normalizedBinary.slice(0, dotIndex) + normalizedBinary.slice(dotIndex + 1);
+      actualExponent -= dotIndex;
+    } else {
+      actualExponent -= normalizedBinary.length;
+      normalizedBinary = normalizedBinary;
+    }
+
+    normalizedBinary = normalizedBinary.slice(0, 23);
+    return { binary: normalizedBinary, exponent: actualExponent };
+  }
+
+  function normalizeDecimal(integer, decimal, exponent) {
+    let normalizedBinary = integer + (decimal ? '.' + decimal : '');
+    let actualExponent = exponent;
+
+    while (normalizedBinary.length > 0 && normalizedBinary[0] === '0') {
+      normalizedBinary = normalizedBinary.slice(1);
+    }
+
+    if (normalizedBinary.length === 0) {
+      return { binary: '0', exponent: 0 };
+    }
+
+    const dotIndex = normalizedBinary.indexOf('.');
+    if (dotIndex !== -1) {
+      normalizedBinary = normalizedBinary.slice(0, dotIndex) + normalizedBinary.slice(dotIndex + 1);
+      actualExponent -= dotIndex;
+    } else {
+      actualExponent -= normalizedBinary.length;
+      normalizedBinary = normalizedBinary;
+    }
+
+    normalizedBinary = normalizedBinary.slice(0, 23);
+    return { binary: normalizedBinary, exponent: actualExponent };
   }
 });
