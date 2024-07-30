@@ -9,7 +9,7 @@
     <div class="converter-container">
         <h1>IEEE-754 Binary-32 Floating-Point Converter</h1>
         <div>
-            <input id="number" placeholder="Enter number" autofocus>
+            <input id="number" placeholder="Enter number (e.g., NaN, sNaN, qNaN, Infinity, -Infinity, -0)" autofocus>
             <select id="base">
                 <option value="2">x2 (Binary)</option>
                 <option value="10">x10 (Decimal)</option>
@@ -22,6 +22,19 @@
         <div id="output">
             <p><strong>Binary Output:</strong> <span id="binaryOutput"></span></p>
             <p><strong>Hexadecimal:</strong> <span id="hexOutput"></span></p>
+            <p id="error" style="color:red;"></p>
+        </div>
+        <div id="instructions">
+            <h2>Special Values Instructions</h2>
+            <p>To enter special values, use the following format:</p>
+            <ul>
+                <li>Signaling NaN: Enter "sNaN"</li>
+                <li>Quiet NaN: Enter "qNaN"</li>
+                <li>Positive Infinity: Enter "Infinity"</li>
+                <li>Negative Infinity: Enter "-Infinity"</li>
+                <li>Negative Zero: Enter "-0"</li>
+                <li>Positive Zero: Enter "0"</li>
+            </ul>
         </div>
     </div>
     <script src="index.js"></script>
