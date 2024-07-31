@@ -44,43 +44,36 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handleSpecialCases(numInput) {
-    if (numInput.toLowerCase() === 'snan') {
-      const result = handleNaN(true);
-      setOutput(result.binary, result.hex);
-      return true;
+    switch (numInput.toLowerCase()) {
+      case '+0':
+      case '0':
+        setOutput('0 00000000 00000000000000000000000', '00000000');
+        return true;
+      case '-0':
+        setOutput('1 00000000 00000000000000000000000', '80000000');
+        return true;
+      case '+infinity':
+      case 'infinity':
+        setOutput('0 11111111 00000000000000000000000', '7F800000');
+        return true;
+      case '-infinity':
+        setOutput('1 11111111 00000000000000000000000', 'FF800000');
+        return true;
+      case 'snan':
+        setOutput('0 11111111 01111111111111111111111', '7FBFFFFF');
+        return true;
+      case 'qnan':
+        setOutput('0 11111111 11111111111111111111111', '7FFFFFFF');
+        return true;
+      case 'largest_positive_normal':
+        setOutput('0 11111110 11111111111111111111111', '7F7FFFFF');
+        return true;
+      case 'largest_negative_normal':
+        setOutput('1 11111110 11111111111111111111111', 'FF7FFFFF');
+        return true;
+      default:
+        return false;
     }
-
-    if (numInput.toLowerCase() === 'qnan') {
-      const result = handleNaN(false);
-      setOutput(result.binary, result.hex);
-      return true;
-    }
-
-    if (numInput.toLowerCase() === 'infinity') {
-      const result = handleInfinity(false);
-      setOutput(result.binary, result.hex);
-      return true;
-    }
-
-    if (numInput.toLowerCase() === '-infinity') {
-      const result = handleInfinity(true);
-      setOutput(result.binary, result.hex);
-      return true;
-    }
-
-    if (numInput === '-0') {
-      const result = handleNegativeZero();
-      setOutput(result.binary, result.hex);
-      return true;
-    }
-
-    if (numInput === '0') {
-      const result = handlePositiveZero();
-      setOutput(result.binary, result.hex);
-      return true;
-    }
-
-    return false;
   }
 
   function convertNumber(numInput, base, expInput) {
@@ -124,34 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function setOutput(binary, hex) {
     binaryOutput.innerText = binary;
     hexOutput.innerText = hex;
-  }
-
-  function handleNaN(isSignaling) {
-    let binary = '01111111111111111111111111111111'; // Default pattern for NaN
-    let hex = '7FFFFFFF';
-    if (isSignaling) {
-      binary = '01111111101111111111111111111111'; // Example of sNaN
-      hex = '7FBFFFFF';
-    }
-    return { binary, hex };
-  }
-
-  function handleInfinity(isNegative) {
-    let binary = isNegative ? '11111111100000000000000000000000' : '01111111100000000000000000000000';
-    let hex = isNegative ? 'FF800000' : '7F800000';
-    return { binary, hex };
-  }
-
-  function handleNegativeZero() {
-    let binary = '10000000000000000000000000000000';
-    let hex = '80000000';
-    return { binary, hex };
-  }
-
-  function handlePositiveZero() {
-    let binary = '00000000000000000000000000000000';
-    let hex = '00000000';
-    return { binary, hex };
   }
 
   function saveToFile(numInput, base, expInput) {
