@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const base = baseSelect.value;
     clearOutputs();
 
+    if (numInput === '' || expInput === '') {
+      errorOutput.innerText = 'ERROR: Please enter both a number and an exponent';
+      return;
+    }
+
     if (handleSpecialCases(numInput)) {
       return;
     }
@@ -40,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function clearOutputs() {
     binaryOutput.innerText = '';
     hexOutput.innerText = '';
-    if (errorOutput) errorOutput.innerText = '';
+    errorOutput.innerText = '';
   }
 
   function handleSpecialCases(numInput) {
@@ -134,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function checkForErrors(numInput, base, expInput, signBit, splitNumber) {
     if (numInput === '' || expInput === '') {
-      errorOutput.innerText = 'ERROR: Null input';
+      errorOutput.innerText = 'ERROR: Please enter both a number and an exponent';
       clearOutputs();
       return false;
     }
