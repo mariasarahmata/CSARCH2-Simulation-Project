@@ -49,34 +49,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleSpecialCases(numInput) {
+        let binary, hex;
         switch (numInput.toLowerCase()) {
-            case 'snan':
-                setOutput('0 11111111 00000000000000000000001', '7FC00001'); // Example sNaN
-                return true;
-            case 'qnan':
-                setOutput('0 11111111 10000000000000000000000', '7FE00000'); // Example qNaN
-                return true;
-            case 'infinity':
-                setOutput('0 11111111 00000000000000000000000', '7F800000'); // Positive Infinity
-                return true;
-            case '-infinity':
-                setOutput('1 11111111 00000000000000000000000', 'FF800000'); // Negative Infinity
-                return true;
             case '0':
-                setOutput('0 00000000 00000000000000000000000', '00000000'); // Positive Zero
-                return true;
+                binary = buildIEEE754('0', 0, '0'.repeat(23));
+                hex = binaryToHex(binary.replace(/ /g, ''));
+                break;
             case '-0':
-                setOutput('1 00000000 00000000000000000000000', '80000000'); // Negative Zero
-                return true;
+                binary = buildIEEE754('1', 0, '0'.repeat(23));
+                hex = binaryToHex(binary.replace(/ /g, ''));
+                break;
+            case 'infinity':
+                binary = buildIEEE754('0', 255, '0'.repeat(23));
+                hex = binaryToHex(binary.replace(/ /g, ''));
+                break;
+            case '-infinity':
+                binary = buildIEEE754('1', 255, '0'.repeat(23));
+                hex = binaryToHex(binary.replace(/ /g, ''));
+                break;
+            case 'snan':
+                binary = buildIEEE754('x', 255, '01' + 'x'.repeat(21));
+                hex = '7FC00001'; // Placeholder hex for signaling NaN
+                break;
+            case 'qnan':
+                binary = buildIEEE754('x', 255, '1' + 'x'.repeat(22));
+                hex = '7FE00000'; // Placeholder hex for quiet NaN
+                break;
             default:
                 return false;
         }
+        setOutput(binary, hex);
+        return true;
     }
 
     function convertNumber(numInput, base, expInput) {
         const signBit = determineSign(numInput);
-        let integerPart, decimalPart;
-        [integerPart, decimalPart] = numInput.split('.');
+        let [integerPart, decimalPart] = numInput.includes('.') ? numInput.split('.') : [numInput, '0'];
         decimalPart = decimalPart ? '0.' + decimalPart : '0.0';
 
         if (base === '2') {
@@ -91,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function convertBinaryNumber(signBit, integerPart, decimalPart, exponent) {
         let normalized = normalizeBinary(integerPart + decimalPart.substring(1), exponent); // Removes '0.'
         let effectiveExponent = 127 + normalized.exponent;
-        
+
         if (effectiveExponent <= 0) {  // Handling for denormalized numbers
             return handleDenormalized(signBit, normalized.binary);
         } else if (effectiveExponent >= 255) {
@@ -116,9 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return buildIEEE754(signBit, '00000000', mantissa);
     }
 
-    function buildIEEE754(signBit, exponentBits, mantissa) {
-        exponentBits = exponentBits.padStart(8, '0'); // Ensure the exponent has 8 bits
-        let binary = `${signBit} ${exponentBits} ${mantissa}`;
+    function buildIEEE754(signBit, exponent, mantissa) {
+        const exponentBits = exponent.toString(2).padStart(8, '0'); // Ensure the exponent has 8 bits
+        const mantissaBits = mantissa.padEnd(23, '0'); // Ensure the mantissa has 23 bits
+        let binary = `${signBit} ${exponentBits} ${mantissaBits}`;
         let hex = binaryToHex(binary.replace(/ /g, ''));
         return { binary, hex };
     }
