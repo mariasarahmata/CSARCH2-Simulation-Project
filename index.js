@@ -36,22 +36,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function convertFloatingPointNumber(numInput, exponent) {
         const signBit = numInput[0] === '-' ? '1' : '0';
-        let binary = numInput.replace(/^-/, '').replace(/[\+x]/g, '').split('.')[1]; // Extract only the fractional part after the decimal
-        let adjustedExponent = 127 + exponent; // Apply IEEE 754 bias
+        let binary = getBinaryFraction(numInput.replace(/^-/, ''));
+        let exponentBits = 127 + exponent;
 
-        // Handling for denormalized numbers
-        if (adjustedExponent <= 0) {
-            binary = binary.padStart(binary.length - adjustedExponent + 1, '0'); // Shift the binary digits right
-            if (binary.length > 23) {
-                binary = binary.substring(0, 23); // Trim the binary to fit 23 bits if necessary
-            }
-            return {
-                binary: `${signBit} 00000000 ${binary.padEnd(23, '0')}`,
-                hex: `${signBit}0${parseInt(binary, 2).toString(16).padStart(7, '0').toUpperCase()}`
-            };
+        if (exponentBits <= 0) { // Denormalized number handling
+            binary = '0' + binary; // Include implicit leading zero
+            binary = shiftRight(binary, -exponentBits + 1); // Shift to fit into denormalized format
+            return buildIEEE754Output(signBit, '00000000', binary);
         }
 
-        // Handling for infinity and normal numbers omitted for brevity
+        return { // For simplicity, only showing denormalized handling here
+            binary: 'Handling for normal and other special values not shown',
+            hex: 'Only denormalized handling is adjusted'
+        };
+    }
+
+    function getBinaryFraction(decimal) {
+        let [integerPart, fractionalPart = ''] = decimal.split('.');
+        return integerPart + fractionalPart;
+    }
+
+    function shiftRight(binary, shifts) {
+        while (shifts > 0 && binary.length > 0) {
+            binary = binary.substring(1);
+            shifts--;
+        }
+        return binary.padEnd(23, '0'); // Pad the binary to ensure it is 23 bits long
+    }
+
+    function buildIEEE754Output(signBit, exponentBits, mantissa) {
+        mantissa = mantissa.substring(0, 23); // Ensure mantissa is no longer than 23 bits
+        const binary = `${signBit} ${exponentBits} ${mantissa}`;
+        const hex = binaryToHex(binary.replace(/ /g, ''));
+        return { binary, hex };
+    }
+
+    function binaryToHex(binaryStr) {
+        const binLength = binaryStr.length;
+        let hex = '';
+        for (let i = 0; i < binLength; i += 4) {
+            const chunk = binaryStr.substring(i, i + 4);
+            hex += parseInt(chunk, 2).toString(16);
+        }
+        return hex.padStart(8, '0').toUpperCase();
     }
 
     function setOutput(binary, hex) {
